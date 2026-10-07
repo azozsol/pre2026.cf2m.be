@@ -43,7 +43,8 @@ Pour la compilation du JSX, trois variantes ont été comparées : remplacer Ass
 assets/react/
 ├── src/                 ← sources JSX (on édite ici)
 │   ├── islands/         ← composants appelés depuis Twig, un par îlot, rangés par domaine métier
-│   │   └── Demo/HelloIsland.jsx
+│   │   ├── Layout/Header.jsx, Layout/Footer.jsx
+│   │   └── Home/Hero.jsx
 │   └── components/      ← composants réutilisables (boutons, cartes…) importés par les îlots
 └── build/               ← sortie Babel : versionnée, ne jamais modifier à la main
 ```

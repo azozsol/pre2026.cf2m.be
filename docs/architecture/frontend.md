@@ -68,7 +68,7 @@ templates/
 └── emails/                       # Templates d'emails transactionnels
 ```
 
-> Pas de dossier `components/` avec partials `_navbar` / `_footer` / `_flash_messages` : la navbar et le footer sont directement dans `base.html.twig`. Il n'y a pas non plus de vue `formation/index.html.twig` séparée — la liste des formations est intégrée à `home/index.html.twig`.
+> L'en-tête, le pied de page et le hero de l'accueil sont des **îlots React** (voir plus bas) ; leurs contenus de repli Twig sont dans `templates/layout/_header_fallback.html.twig` et `templates/home/_hero_fallback.html.twig`. Il n'y a pas de vue `formation/index.html.twig` séparée — la liste des formations est intégrée à `home/index.html.twig`.
 
 ## Structure de base.html.twig
 Blocs Twig disponibles (surchargeables par page) :
@@ -79,27 +79,36 @@ Blocs Twig disponibles (surchargeables par page) :
 - `{% block body %}` — contenu principal
 - `{% block javascripts %}` — JS supplémentaire par page
 
-## Composants de la page d'accueil
+## En-tête, pied de page et hero (îlots React — maquette Figma)
 
-### Navbar
-- Logo CF2m (haut gauche), liens principaux, bascule thème
-- **Position sticky universelle** : `position: sticky; top: 0; z-index: 1030` sur toutes les pages sans exception (home, login, register, pages internes)
-- Bootstrap : `navbar navbar-expand-lg navbar-dark cf2m-navbar`
+| Élément | Îlot React | Props (côté serveur) | Repli Twig |
+|---|---|---|---|
+| En-tête | `assets/react/src/islands/Layout/Header.jsx` | `header_props()` | `templates/layout/_header_fallback.html.twig` |
+| Pied de page | `assets/react/src/islands/Layout/Footer.jsx` | `footer_props()` | copyright dans `base.html.twig` |
+| Hero accueil | `assets/react/src/islands/Home/Hero.jsx` | `hero_props()` | `templates/home/_hero_fallback.html.twig` |
 
-### Section Hero
-- Image de fond plein écran avec overlay sombre (fichiers WebP optimisés — voir `docs/architecture/seo-performances.md`)
-- Titre : "FORMATIONS PROFESSIONNELLES des métiers du numérique"
-- Chiffres clés mis en avant avec couleur accent (`--cf2m-gold`) :
-  - **100%** gratuit
-  - **80%** de pratique
-  - **1600 h** de cours
-- Bouton CTA : "NOS FORMATIONS" (Bootstrap `btn btn-primary`)
-- **Colonne droite** : photo de groupe (`.jpg` + `.webp`, 900×675 px, format 4:3) dans un cadre arrondi (`border-radius: 16px`)
+Composants partagés : `assets/react/src/components/` (`Logo`, `ThemeToggle`, `NavDropdown`, `UserMenu`, `Icon`) ;
+hook `useCurrentPath` (`assets/react/src/hooks/`). Styles : `assets/styles/tokens.css` (tokens Figma) et `assets/styles/layout.css`.
 
-### Footer (`cf2m-footer`, dans `base.html.twig`)
-- Colonne gauche : logo (`logo-cf2m-blanc.svg`) + « Centre de Formation 2M »
-- Colonne centre : « Nos activités » — liste des `Page` publiées (`_nav_pages`)
-- Colonne droite : copyright dynamique (`{{ 'now'|date('Y') }}`)
+**Règles à respecter**
+- **Props construites par `App\Service\Layout\LayoutPropsBuilder`** (exposé par `App\Twig\LayoutExtension`) : tableaux sérialisables
+  uniquement. Les droits sont vérifiés là : le lien « Administration » n'est envoyé qu'aux `ROLE_STAGIAIRE`, le badge des
+  révisions en attente qu'aux `ROLE_ADMIN`. **Aucun test de rôle dans React.** Tests : `tests/Service/Layout/LayoutPropsBuilderTest.php`.
+- **En-tête et pied de page permanents** : `data-turbo-permanent` + `react_component(..., {permanent: true})` → montés une seule
+  fois par chargement complet, pas de clignotement entre les pages. Conséquences :
+  - le lien actif est recalculé côté client à chaque `turbo:load` (`useCurrentPath`, champ `match` des props) ;
+  - tout ce qui change l'utilisateur connecté (connexion, 2FA, déconnexion, édition du profil, inscription) doit **recharger
+    toute la page** (`data-turbo="false"`), sinon l'en-tête resterait sur l'ancien état ;
+  - le badge des révisions en attente n'est rafraîchi qu'au prochain chargement complet.
+- **Contenu de repli** : chaque îlot contient un repli Twig (SEO, affichage avant React, mêmes classes CSS pour éviter un saut).
+  Penser à le mettre à jour quand on modifie le titre ou les liens principaux.
+- Sur l'accueil (`body[data-page="home"]`), l'en-tête est transparent, posé sur la photo du hero, logo blanc dans les deux thèmes.
+  Sur les autres pages, il prend `--cf2m-header-bg` (sombre ou blanc selon le thème).
+- Le bascule de thème reste le contrôleur Stimulus `theme` : `ThemeToggle` ne fait que rendre le bouton.
+
+**Hero** : titre en capitales espacées, 2 chiffres clés (100 % gratuit, 80 % de pratique), accroche « Change d'orientation »,
+bouton pilule cyan, portrait rond dans l'anneau `cercle-contour-blanc.svg`. Images provisoires (`hero-bg.webp`,
+`hero-portrait.webp`) en attendant les visuels de la maquette.
 
 ## Conventions Bootstrap 5
 - Breakpoints : `sm` (576px), `md` (768px), `lg` (992px), `xl` (1200px)
