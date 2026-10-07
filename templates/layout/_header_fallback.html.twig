@@ -1,0 +1,19 @@
+{#
+    Contenu de repli de l'îlot React « Layout/Header » : affiché avant le montage
+    de React (et pour les robots / sans JavaScript), puis remplacé par l'îlot.
+    Garder les mêmes classes que Header.jsx pour éviter un saut visuel.
+#}
+<nav class="navbar navbar-expand-lg cf2m-site-header__nav" aria-label="Navigation principale">
+    <div class="container">
+        <a class="navbar-brand cf2m-site-header__brand" href="{{ path('app_home') }}" aria-label="CF2m — Accueil">
+            <img src="{{ asset('images/logo-cf2m-blanc.svg') }}" alt="Logo CF2m" width="84" height="84" class="cf2m-logo-img cf2m-logo-img--dark">
+            <img src="{{ asset('images/logo-cf2m-bleu.svg') }}" alt="" width="84" height="84" class="cf2m-logo-img cf2m-logo-img--light" aria-hidden="true">
+            <span class="cf2m-site-header__tagline">Centre de formation 2 mille</span>
+        </a>
+        <ul class="navbar-nav flex-row d-none d-lg-flex cf2m-site-header__links">
+            <li class="nav-item"><a class="nav-link" href="{{ path('app_home') }}">Accueil</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('app_home') }}#formations">Nos formations</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ path('app_contact') }}">Nous contacter</a></li>
+        </ul>
+    </div>
+</nav>

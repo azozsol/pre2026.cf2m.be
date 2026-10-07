@@ -1,0 +1,24 @@
+{#
+    Contenu de repli de l'îlot React « Home/Hero » : titre, accroche et bouton
+    présents dans le HTML (SEO, affichage immédiat), puis remplacés par l'îlot
+    complet (statistiques, portrait). Mêmes classes que Hero.jsx.
+#}
+{%- set _bg = hero_background() -%}
+<section class="cf2m-home-hero">
+    <picture class="cf2m-home-hero__bg">
+        <source media="(max-width: 767.98px)" srcset="{{ _bg.mobile }}">
+        <img src="{{ _bg.desktop }}" alt="" fetchpriority="high">
+    </picture>
+    <div class="container cf2m-home-hero__inner">
+        <div class="row">
+            <div class="col-lg-7">
+                <h1 class="cf2m-home-hero__title">
+                    {{ hero.title }}
+                    <span class="cf2m-home-hero__subtitle">{{ hero.subtitle }}</span>
+                </h1>
+                <p class="cf2m-home-hero__tagline">{{ hero.tagline }}</p>
+                <a href="{{ hero.cta.url }}" class="cf2m-home-hero__cta">{{ hero.cta.label }}</a>
+            </div>
+        </div>
+    </div>
+</section>
