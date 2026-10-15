@@ -1,4 +1,4 @@
-import Icon from './Icon.js';
+import Icon from './Icon';
 
 /**
  * Menu de l'utilisateur connecté. Les liens présents (administration, badge des

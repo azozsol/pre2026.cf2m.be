@@ -680,7 +680,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         message_bus?: scalar|Param|null, // The message bus to use. // Default: "messenger.default_bus"
  *         routing?: array<string, array{ // Default: []
  *             service?: scalar|Param|null,
- *             secret?: scalar|Param|null, // The secret used to verify incoming request signatures. It must be set in production: with an empty value, requests from any sender are accepted. // Default: ""
+ *             secret?: scalar|Param|null, // The secret used to verify incoming request signatures. It must be set in production: with an empty value, depending on the parser, requests from any sender are accepted or every request is rejected. // Default: ""
  *         }>,
  *     },
  *     remote_event?: bool|array{ // RemoteEvent configuration
@@ -1303,9 +1303,9 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             lifetime?: int|Param, // Default: 31536000
  *             path?: scalar|Param|null, // Default: "/"
  *             domain?: scalar|Param|null, // Default: null
- *             secure?: true|false|"auto"|Param, // Default: "auto"
+ *             secure?: true|false|"auto"|Param, // Defaults to the value of "framework.session.cookie_secure", or to "auto".
  *             httponly?: bool|Param, // Default: true
- *             samesite?: null|"lax"|"strict"|"none"|Param, // Default: "lax"
+ *             samesite?: null|"lax"|"strict"|"none"|Param, // Defaults to the value of "framework.session.cookie_samesite", or to "lax".
  *             always_remember_me?: bool|Param, // Default: false
  *             remember_me_parameter?: scalar|Param|null, // Default: "_remember_me"
  *         },
@@ -1573,10 +1573,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         db_driver?: scalar|Param|null, // Default: null
  *     }>,
  * }
- * @psalm-type ReactConfig = array{
- *     controllers_path?: scalar|Param|null, // The path to the directory where React controller components are stored - relevant only when using symfony/asset-mapper. // Default: "%kernel.project_dir%/assets/react/controllers"
- *     name_glob?: list<scalar|Param|null>,
- * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1592,7 +1588,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     monolog?: MonologConfig,
  *     twig_component?: TwigComponentConfig,
  *     vich_uploader?: VichUploaderConfig,
- *     react?: ReactConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1612,7 +1607,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_component?: TwigComponentConfig,
  *         zenstruck_foundry?: ZenstruckFoundryConfig,
  *         vich_uploader?: VichUploaderConfig,
- *         react?: ReactConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1629,7 +1623,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         monolog?: MonologConfig,
  *         twig_component?: TwigComponentConfig,
  *         vich_uploader?: VichUploaderConfig,
- *         react?: ReactConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1648,7 +1641,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_component?: TwigComponentConfig,
  *         zenstruck_foundry?: ZenstruckFoundryConfig,
  *         vich_uploader?: VichUploaderConfig,
- *         react?: ReactConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

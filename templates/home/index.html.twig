@@ -7,11 +7,75 @@
 
 {% block body %}
 
-{# ── Hero : îlot React (assets/react/src/islands/Home/Hero.jsx) ──────── #}
-{%- set hero = hero_props() -%}
-<div {{ react_component('Home/Hero', hero) }}>
-    {% include 'home/_hero_fallback.html.twig' %}
-</div>
+{# ── Section Hero ──────────────────────────────────────────────────── #}
+<section class="cf2m-hero">
+    <div class="container">
+        <div class="row align-items-center g-4">
+
+            {# ── Colonne gauche : contenu glassmorphisme ── #}
+            <div class="col-lg-6 col-md-9">
+                <div class="cf2m-hero-glass">
+
+                    <p class="cf2m-hero-label">Formations Professionnelles</p>
+
+                    <h1 class="mb-4">
+                        des métiers<br>
+                        <em>du numérique</em>
+                    </h1>
+
+                    <p class="lead mb-4">
+                        Développez vos compétences avec nos formations professionnelles
+                        adaptées aux besoins du marché belge. Étudiants, demandeurs d'emploi,
+                        entreprises — nous vous accompagnons.
+                    </p>
+
+                    {# Stats #}
+                    <div class="cf2m-hero-stats">
+                        <div>
+                            <div class="cf2m-stat-value">100%</div>
+                            <div class="cf2m-stat-label">gratuit</div>
+                        </div>
+                        <div>
+                            <div class="cf2m-stat-value">80%</div>
+                            <div class="cf2m-stat-label">de pratique</div>
+                        </div>
+                        <div>
+                            <div class="cf2m-stat-value">1600 h</div>
+                            <div class="cf2m-stat-label">de cours</div>
+                        </div>
+                    </div>
+
+                    <a href="#formations" class="cf2m-hero-btn">
+                        Nos formations
+                    </a>
+
+                </div>
+            </div>
+
+            {# ── Colonne droite : portrait circulaire ── #}
+            <div class="col-lg-6 d-none d-lg-flex cf2m-hero-portrait-wrap">
+                <div class="cf2m-hero-portrait-outer">
+                    <img class="cf2m-hero-portrait-ring"
+                         src="{{ asset('images/cercle-contour-blanc.svg') }}"
+                         alt="" aria-hidden="true">
+                    <div class="cf2m-hero-portrait">
+                        <img class="cf2m-hero-slide cf2m-hero-slide--portrait"
+                             src="{{ asset('images/hero-portrait.jpg') }}"
+                             alt="Stagiaire CF2m"
+                             width="340" height="340"
+                             fetchpriority="high">
+                        <img class="cf2m-hero-slide cf2m-hero-slide--groupe"
+                             src="{{ asset('images/hero-groupe.jpg') }}"
+                             alt="Stagiaires CF2m"
+                             width="800" height="600"
+                             loading="lazy">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
 
 {# ── Section Formations ────────────────────────────────────────────── #}
 <section id="formations" class="py-5">
@@ -50,7 +114,7 @@
                                     <img src="{{ asset('images/formation-icons/' ~ formation_icons[formation.slug]) }}"
                                          alt=""
                                          aria-hidden="true"
-                                         class="cf2m-formation-icon shrink-0"
+                                         class="cf2m-formation-icon flex-shrink-0"
                                          width="32" height="32"
                                          loading="lazy">
                                 {% endif %}

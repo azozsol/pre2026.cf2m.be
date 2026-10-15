@@ -1,4 +1,4 @@
-import Logo from '../../components/Logo.js';
+import Logo from '../components/Logo';
 
 /**
  * Pied de page du site (en attente de la maquette Figma : reprend le design actuel).

@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import Logo from '../../components/Logo.js';
-import NavDropdown from '../../components/NavDropdown.js';
-import ThemeToggle from '../../components/ThemeToggle.js';
-import UserMenu from '../../components/UserMenu.js';
-import useCurrentPath from '../../hooks/useCurrentPath.js';
+import Logo from '../components/Logo';
+import NavDropdown from '../components/NavDropdown';
+import ThemeToggle from '../components/ThemeToggle';
+import UserMenu from '../components/UserMenu';
+import useCurrentPath from '../hooks/useCurrentPath';
 
 function isActive(item, path) {
     return item.exact ? path === item.match : path.startsWith(item.match);

@@ -1,4 +1,4 @@
-import Icon from './Icon.js';
+import Icon from './Icon';
 
 /**
  * Entrée de menu déroulante (Bootstrap dropdown, via data-bs-toggle).

@@ -1,7 +1,7 @@
 # Décision architecturale — Frontend React (SPA séparée, Symfony en backend)
 
 **Date** : 2026-10-15 (révision de la décision du 2026-10-02)
-**Statut** : Adopté — remplace l'option A (îlots React dans Twig), migration à planifier
+**Statut** : Adopté — remplace l'option A (îlots React dans Twig, retirée du code), migration en cours
 **Auteur** : Soliman Azoz / Claude Opus
 
 > Le nom du fichier est conservé pour ne pas casser les liens existants ; il décrit désormais l'option B.
@@ -32,7 +32,7 @@ l'équipe passe à l'option B : **un frontend React autonome, Symfony restant le
    EasyAdmin. Les règles métier et les contrôles de droits restent côté serveur (**aucun test de rôle dans React**).
 2. **Le frontend public devient une SPA React 19 (Vite)**, dans un dossier dédié du dépôt (`frontend/`).
 3. **Symfony expose une API JSON** (`/api/...`) : contrôleurs renvoyant `JsonResponse` / `$this->json(...)`
-   avec groupes de sérialisation, protégés par `#[IsGranted]` / voters. Les DTO remplacent les props d'îlots.
+   avec groupes de sérialisation, protégés par `#[IsGranted]` / voters. Uniquement des tableaux/DTO, jamais d'entité.
 4. **EasyAdmin reste en Twig** sur `/admin` (aucune réécriture du back-office).
 5. **Le build de la SPA se fait en CI** (GitHub Actions), le VPS n'ayant pas Node : les fichiers compilés sont
    envoyés sur le serveur et servis par Apache/Nginx, Symfony gardant `/api` et `/admin`.
@@ -47,40 +47,50 @@ l'équipe passe à l'option B : **un frontend React autonome, Symfony restant le
 | Hébergement de la SPA | Même domaine (`/` → SPA, `/api` et `/admin` → Symfony) / sous-domaine | Même domaine (pas de CORS, cookies simples) |
 | Formulaires (contact, inscription, mot de passe oublié) | Réécriture React + validation API | Validation Symfony (`Validator`) conservée côté API ; Turnstile vérifié côté serveur |
 
-## Conséquences sur l'existant
+## Conséquences sur l'existant (appliquées le 2026-10-15)
 
-| Élément | Devenir |
+L'option A a été **retirée entièrement** dès l'adoption de l'option B :
+
+| Élément de l'option A | Devenir |
 |---|---|
-| Composants JSX (`assets/react/src/components/`, `islands/`) | **Réutilisés** dans la SPA (Header, Footer, Hero, Logo, ThemeToggle…) |
-| Tokens Figma (`assets/styles/tokens.css`, `layout.css`) | **Réutilisés** dans la SPA |
-| `LayoutPropsBuilder` / `LayoutExtension` | Logique déplacée vers un point d'API (ex. `GET /api/layout`) ; tests à adapter |
-| `symfony/ux-react`, compilation Babel, `assets/react/build/` | Supprimés une fois la migration terminée |
-| Templates Twig publics, Stimulus, Turbo | Supprimés progressivement, page par page ; conservés pour EasyAdmin et les emails |
-| Formulaires Symfony publics (4) | Remplacés par des formulaires React + API |
-| Service `node` de Docker | Lance le serveur de dev Vite au lieu de `react:watch` |
-| Workflows `deploy-preprod.yml` / `deploy-prod.yml` | Ajout du build Vite et de l'envoi des fichiers compilés |
+| Composants JSX Header, Footer, Hero, Logo, ThemeToggle, NavDropdown, UserMenu, Icon, `useCurrentPath` | **Déplacés** dans `frontend/src/` (`layout/`, `sections/`, `components/`, `hooks/`), à adapter à la SPA (étape 2) |
+| Tokens Figma (`tokens.css`, `layout.css`) | **Déplacés** dans `frontend/src/styles/` |
+| `LayoutPropsBuilder` (+ test) | **Conservé** : servira le point d'API `GET /api/layout` (étape 2) |
+| `LayoutExtension` (fonctions Twig `header_props()`…), replis Twig `_header_fallback` / `_hero_fallback` | Supprimés |
+| `symfony/ux-react`, `config/packages/react.yaml`, entrées React de `importmap.php` | Supprimés |
+| Babel (`package.json`, `babel.config.json` à la racine), `assets/react/` (sources et `build/`) | Supprimés |
+| Étape CI « Compile React islands » | Supprimée |
+| `base.html.twig`, `home/index.html.twig` | Revenus à l'en-tête, au pied de page et au hero **Twig** de `main` (polices Poppins/Montserrat conservées) |
+
+Restent à faire au fil de la migration : templates Twig publics, Stimulus, Turbo et formulaires Symfony publics
+(remplacés page par page ; EasyAdmin et les emails restent en Twig), déploiement de la SPA dans
+`deploy-preprod.yml` / `deploy-prod.yml`.
 
 ## Migration (proposition, par étapes)
 
 1. ✅ Squelette `frontend/` (Vite + React 19), service Docker, build en CI — branche `feature/34-spa-react` (voir ci-dessous).
-2. Authentification par session + point d'API `/api/me` et `/api/layout` ; en-tête/pied de page/hero portés dans la SPA.
+2. Authentification par session + points d'API `/api/me` et `/api/layout` ; brancher Header/Footer/Hero (déjà dans `frontend/src/`) sur ces points.
 3. Pages publiques en lecture (accueil, formations, travaux, pages statiques) via API.
 4. Formulaires (contact, inscription, connexion/2FA, réinitialisation du mot de passe, profil).
-5. Suppression de Symfony UX React, Babel, Stimulus/Turbo et des templates publics devenus inutiles.
+5. Suppression de Stimulus/Turbo et des templates publics devenus inutiles (Symfony UX React et Babel : déjà retirés).
 
-Tant que la migration n'est pas terminée, le site Twig actuel (avec les îlots déjà en place) reste en production.
+Tant que la migration n'est pas terminée, le site Twig actuel (sans îlots) reste en production.
 
 ## Organisation de la SPA (`frontend/`)
 
 ```
 frontend/
-├── package.json, package-lock.json   ← dépendances de la SPA (versionnées) ; React à la même version que importmap.php
+├── package.json, package-lock.json   ← dépendances de la SPA (versionnées)
 ├── vite.config.js                    ← serveur de dev 5173 + relais des routes Symfony vers nginx
 ├── index.html                        ← page unique, monte <App /> dans #root
 └── src/
     ├── main.jsx, App.jsx             ← point d'entrée et routes (react-router)
     ├── api/client.js                 ← appels à l'API Symfony (même origine, cookie de session)
-    └── pages/                        ← une page par route
+    ├── pages/                        ← une page par route
+    ├── layout/                       ← Header, Footer (maquette Figma, repris de l'option A)
+    ├── sections/                     ← blocs de page (Hero…)
+    ├── components/, hooks/           ← composants et hooks partagés
+    └── styles/                       ← tokens.css, layout.css (tokens Figma)
 ```
 
 - **Dev** : `docker compose up -d` → http://localhost:5173. Vite relaie `/api`, `/admin`, `/login`, `/logout`,
@@ -89,10 +99,11 @@ frontend/
   (`StatutController`, testé par `tests/Controller/Api/StatutControllerTest.php`).
 - **CI** : le job `frontend-build` de `symfony.yml` fait `npm ci` + `npm run build` et publie `frontend/dist`
   (artefact `frontend-dist`). `dist/` n'est pas versionné. Le déploiement sur le VPS reste à faire.
-- Imports **sans** extension `.js` (Vite résout les `.jsx`), contrairement aux îlots.
+- Imports **sans** extension (Vite résout les `.jsx`).
 
 ## Historique
 
 - **2026-10-02** : option A adoptée (îlots React via Symfony UX React, JSX compilé par Babel, sortie versionnée
   dans `assets/react/build/`, React servi par l'importmap). Voir `documentations-dev/134-...` et `135-...`.
 - **2026-10-15** : passage à l'option B après nouvelle discussion d'équipe ; Symfony conservé comme backend.
+  Le même jour, toute l'infrastructure de l'option A est retirée (composants récupérés dans `frontend/`).
