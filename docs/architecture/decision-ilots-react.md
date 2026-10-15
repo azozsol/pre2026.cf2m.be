@@ -62,13 +62,34 @@ l'équipe passe à l'option B : **un frontend React autonome, Symfony restant le
 
 ## Migration (proposition, par étapes)
 
-1. Squelette `frontend/` (Vite + React 19), service Docker, build en CI.
+1. ✅ Squelette `frontend/` (Vite + React 19), service Docker, build en CI — branche `feature/34-spa-react` (voir ci-dessous).
 2. Authentification par session + point d'API `/api/me` et `/api/layout` ; en-tête/pied de page/hero portés dans la SPA.
 3. Pages publiques en lecture (accueil, formations, travaux, pages statiques) via API.
 4. Formulaires (contact, inscription, connexion/2FA, réinitialisation du mot de passe, profil).
 5. Suppression de Symfony UX React, Babel, Stimulus/Turbo et des templates publics devenus inutiles.
 
 Tant que la migration n'est pas terminée, le site Twig actuel (avec les îlots déjà en place) reste en production.
+
+## Organisation de la SPA (`frontend/`)
+
+```
+frontend/
+├── package.json, package-lock.json   ← dépendances de la SPA (versionnées) ; React à la même version que importmap.php
+├── vite.config.js                    ← serveur de dev 5173 + relais des routes Symfony vers nginx
+├── index.html                        ← page unique, monte <App /> dans #root
+└── src/
+    ├── main.jsx, App.jsx             ← point d'entrée et routes (react-router)
+    ├── api/client.js                 ← appels à l'API Symfony (même origine, cookie de session)
+    └── pages/                        ← une page par route
+```
+
+- **Dev** : `docker compose up -d` → http://localhost:5173. Vite relaie `/api`, `/admin`, `/login`, `/logout`,
+  `/uploads`, `/images` vers nginx : SPA et API partagent la même origine.
+- **API** : contrôleurs dans `src/Controller/Api/`, routes `/api/...`, réponses JSON. Premier point : `GET /api/statut`
+  (`StatutController`, testé par `tests/Controller/Api/StatutControllerTest.php`).
+- **CI** : le job `frontend-build` de `symfony.yml` fait `npm ci` + `npm run build` et publie `frontend/dist`
+  (artefact `frontend-dist`). `dist/` n'est pas versionné. Le déploiement sur le VPS reste à faire.
+- Imports **sans** extension `.js` (Vite résout les `.jsx`), contrairement aux îlots.
 
 ## Historique
 
