@@ -31,7 +31,7 @@ export default function Header({ homeUrl, logo, tagline, nav, user, loginUrl }) 
         <nav className="navbar navbar-expand-lg cf2m-site-header__nav" aria-label="Navigation principale">
             <div className="container">
                 <a className="navbar-brand cf2m-site-header__brand" href={homeUrl} aria-label="CF2m — Accueil">
-                    <Logo logo={logo} size={84} />
+                    <Logo logo={logo} size={95} />
                     <span className="cf2m-site-header__tagline">{tagline}</span>
                 </a>
 

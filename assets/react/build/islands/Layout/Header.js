@@ -44,7 +44,7 @@ export default function Header({
         "aria-label": "CF2m \u2014 Accueil",
         children: [/*#__PURE__*/_jsx(Logo, {
           logo: logo,
-          size: 84
+          size: 95
         }), /*#__PURE__*/_jsx("span", {
           className: "cf2m-site-header__tagline",
           children: tagline

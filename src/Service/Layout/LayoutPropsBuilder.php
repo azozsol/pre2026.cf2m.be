@@ -26,8 +26,7 @@ final class LayoutPropsBuilder
         private readonly Security $security,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly Packages $packages,
-    ) {
-    }
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -46,16 +45,26 @@ final class LayoutPropsBuilder
         return [
             'homeUrl' => $this->url('app_home'),
             'logo' => $this->logo(),
-            'tagline' => 'Centre de formation 2 mille',
+            'tagline' => 'Centre de formation 2 mille asbl',
             // « match » : préfixe d'URL qui rend l'entrée active (calculé côté client à chaque navigation Turbo)
             'nav' => [
                 ['type' => 'link', 'label' => 'Accueil', 'url' => $this->url('app_home'), 'match' => '/', 'exact' => true],
-                ['type' => 'dropdown', 'label' => 'Nos formations', 'match' => '/formation', 'items' => $formations,
+                [
+                    'type' => 'dropdown',
+                    'label' => 'Nos formations',
+                    'match' => '/formation',
+                    'items' => $formations,
                     'emptyLabel' => 'Aucune formation disponible',
-                    'footerLink' => ['label' => 'Voir toutes les formations →', 'url' => $this->url('app_home').'#formations']],
-                ['type' => 'dropdown', 'label' => 'Nos activités', 'match' => '/activites', 'items' => $this->activities(),
+                    'footerLink' => ['label' => 'Voir toutes les formations →', 'url' => $this->url('app_home') . '#formations']
+                ],
+                [
+                    'type' => 'dropdown',
+                    'label' => 'Nos activités',
+                    'match' => '/activites',
+                    'items' => $this->activities(),
                     'emptyLabel' => 'Aucune activité disponible',
-                    'external' => ['label' => 'CF2d', 'url' => 'https://cf2d.be/', 'title' => 'Visiter le site CF2d (nouvel onglet)']],
+                    'external' => ['label' => 'CF2d', 'url' => 'https://cf2d.be/', 'title' => 'Visiter le site CF2d (nouvel onglet)']
+                ],
                 ['type' => 'link', 'label' => 'Nous contacter', 'url' => $this->url('app_contact'), 'match' => '/contact', 'exact' => false],
             ],
             'user' => $this->user(),
