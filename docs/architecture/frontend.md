@@ -1,5 +1,9 @@
 # Frontend — CF2m
 
+> **Changement de cap (2026-10-15)** : le frontend public va migrer vers une **SPA React séparée (Vite)**, Symfony
+> restant le backend (API JSON, sécurité, EasyAdmin). Ce document décrit l'état **actuel** (Twig + îlots React),
+> valable jusqu'à la fin de la migration. Voir `docs/architecture/decision-ilots-react.md`.
+
 ## Stack
 | Couche | Technologie |
 |--------|-------------|
@@ -7,7 +11,7 @@
 | JS | Stimulus + Turbo (ImportMap, pas de bundler) |
 | Îlots React | React 19 via Symfony UX React, JSX compilé par Babel — voir `docs/architecture/decision-ilots-react.md` |
 | Templates | Twig |
-| Polices | Google Fonts (`Outfit` en titres, `DM Sans` en corps de texte) — chargement non bloquant, voir `docs/architecture/seo-performances.md` |
+| Polices | Google Fonts (`Poppins` en titres, `Montserrat` en corps de texte) — chargement non bloquant, voir `docs/architecture/seo-performances.md` |
 
 ## Palette de couleurs
 Définie dans `assets/styles/app.css` (`:root`), mode sombre par défaut avec bascule mode clair (voir plus bas).

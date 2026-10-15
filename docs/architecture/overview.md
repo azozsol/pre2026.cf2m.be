@@ -6,7 +6,7 @@
 | Framework | Symfony 7.4 LTS (--webapp) |
 | Langage | PHP 8.5 (strict_types) |
 | Base de données | MariaDB 11.4 |
-| Frontend | ImportMap + Stimulus + Turbo + îlots React (Babel uniquement pour le JSX) |
+| Frontend | **Cible** : SPA React 19 (Vite) + API JSON Symfony — migration à venir. **Actuel** : ImportMap + Stimulus + Turbo + îlots React (voir `decision-ilots-react.md`) |
 | Back-office | EasyAdmin 4 |
 | Containerisation | Docker (dev) |
 | CI/CD | GitHub Actions |
@@ -79,6 +79,7 @@ Les rôles `ROLE_SUPER_ADMIN`, `ROLE_ADMIN` et `ROLE_PEDAGO` sont soumis à une 
 - Stimulus pour les composants JS interactifs
 - Turbo pour la navigation SPA-like sans rechargement complet
 - Îlots React (Symfony UX React) pour les interactions riches : sources JSX dans `assets/react/src/`, compilées par Babel dans `assets/react/build/` (versionné) — voir `docs/architecture/decision-ilots-react.md`
+- **À venir (décision du 2026-10-15)** : remplacement de ce qui précède par une SPA React séparée (Vite) consommant une API JSON Symfony ; EasyAdmin reste en Twig
 
 ## Back-office (EasyAdmin 4)
 - Interface d'administration générée via EasyAdmin 4

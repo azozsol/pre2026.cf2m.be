@@ -1,87 +1,77 @@
-# Décision architecturale — Îlots React dans Twig
+# Décision architecturale — Frontend React (SPA séparée, Symfony en backend)
 
-**Date** : 2026-10-02
-**Statut** : Adopté (mise en place — branche `feature/32-react-islands`)
+**Date** : 2026-10-15 (révision de la décision du 2026-10-02)
+**Statut** : Adopté — remplace l'option A (îlots React dans Twig), migration à planifier
 **Auteur** : Soliman Azoz / Claude Opus
+
+> Le nom du fichier est conservé pour ne pas casser les liens existants ; il décrit désormais l'option B.
 
 ---
 
 ## Contexte
 
-Le nouveau design du site est réalisé sous Figma et doit être intégré avec **React** pour les parties
-interactives. Le site existant repose sur Twig + AssetMapper/ImportMap + Stimulus + Turbo + Bootstrap,
-**sans étape de build**, et tout le fonctionnel (sécurité, voters, formulaires avec CSRF/Turnstile, SEO,
-EasyAdmin) passe par Symfony.
+Le nouveau design du site est réalisé sous Figma et doit être intégré avec **React**. Le site existant repose
+sur Twig + AssetMapper/ImportMap + Stimulus + Turbo + Bootstrap, et tout le fonctionnel (sécurité, voters,
+formulaires avec CSRF/Turnstile, SEO, EasyAdmin) passe par Symfony.
+
+Le 2026-10-02, l'option A (îlots React montés dans Twig) avait été retenue et mise en place
+(`feature/32-react-islands`, `feature/33-design-tokens-figma`). Après nouvelle discussion le 2026-10-15,
+l'équipe passe à l'option B : **un frontend React autonome, Symfony restant le backend**.
 
 ## Options évaluées
 
 | Option | Principe | Verdict |
 |---|---|---|
-| **A. Îlots React dans Twig** | Twig rend la page ; des composants React sont montés à des endroits précis via `react_component()` (Symfony UX React) | **Retenue** |
-| B. SPA React séparée + API | Application React autonome (Vite), Symfony réduit à une API JSON | Rejetée : réécriture complète (auth, CSRF, formulaires, SEO, déploiement) |
+| A. Îlots React dans Twig | Twig rend la page ; des composants React sont montés à des endroits précis via `react_component()` (Symfony UX React) | **Remplacée** (était retenue le 2026-10-02) |
+| **B. SPA React séparée + API Symfony** | Application React autonome (Vite) ; Symfony conserve le métier, la sécurité, la BDD et EasyAdmin, et expose une API JSON | **Retenue** |
 | C. Rester en Twig | Intégrer Figma uniquement avec Twig + CSS + Stimulus | Rejetée : pas de React pour les interactions riches |
-
-Pour la compilation du JSX, trois variantes ont été comparées : remplacer AssetMapper par Webpack Encore
-(migration lourde, et cohabiter avec AssetMapper chargerait Stimulus/Turbo en double), écrire sans JSX
-(`htm`), ou **garder AssetMapper et compiler le JSX avec Babel** → retenu.
 
 ## Décision
 
-1. **Symfony UX React** (`symfony/ux-react`) monte les composants via son contrôleur Stimulus :
-   compatible Turbo (montage/démontage automatique), aucune modification de `base.html.twig`.
-2. **React, react-dom et scheduler sont servis par l'importmap** (`importmap.php`), comme Bootstrap ou Turbo.
-3. **Babel ne fait qu'une chose** : transformer `assets/react/src/**/*.jsx` en `assets/react/build/**/*.js`.
-   Il ne regroupe rien : les `import 'react'` restent tels quels et sont résolus par l'importmap.
-4. **Le JSX compilé est versionné** (`assets/react/build/`) : le déploiement (`deploy-preprod.yml`,
-   `deploy-prod.yml`) fait `git pull` + `asset-map:compile` sur le VPS, qui n'a pas Node.
-   La CI (`symfony.yml`) recompile et échoue si `build/` ne correspond pas aux sources.
-5. **EasyAdmin reste en Twig** ; les formulaires Symfony (CSRF, Turnstile) restent des formulaires Symfony.
+1. **Symfony reste le backend** : entités, services, repositories, voters, Doctrine/MariaDB, emails,
+   EasyAdmin. Les règles métier et les contrôles de droits restent côté serveur (**aucun test de rôle dans React**).
+2. **Le frontend public devient une SPA React 19 (Vite)**, dans un dossier dédié du dépôt (`frontend/`).
+3. **Symfony expose une API JSON** (`/api/...`) : contrôleurs renvoyant `JsonResponse` / `$this->json(...)`
+   avec groupes de sérialisation, protégés par `#[IsGranted]` / voters. Les DTO remplacent les props d'îlots.
+4. **EasyAdmin reste en Twig** sur `/admin` (aucune réécriture du back-office).
+5. **Le build de la SPA se fait en CI** (GitHub Actions), le VPS n'ayant pas Node : les fichiers compilés sont
+   envoyés sur le serveur et servis par Apache/Nginx, Symfony gardant `/api` et `/admin`.
 
-## Organisation des fichiers
+## Points à trancher (recommandation entre parenthèses)
 
-```
-assets/react/
-├── src/                 ← sources JSX (on édite ici)
-│   ├── islands/         ← composants appelés depuis Twig, un par îlot, rangés par domaine métier
-│   │   ├── Layout/Header.jsx, Layout/Footer.jsx
-│   │   └── Home/Hero.jsx
-│   └── components/      ← composants réutilisables (boutons, cartes…) importés par les îlots
-└── build/               ← sortie Babel : versionnée, ne jamais modifier à la main
-```
+| Sujet | Choix possibles | Recommandation |
+|---|---|---|
+| Authentification | Session Symfony par cookie (même domaine) / JWT | **Session par cookie, même domaine** : réutilise le firewall, la 2FA et les voters existants ; pas de jeton stocké côté navigateur |
+| CSRF | Jeton fourni par l'API / cookie `SameSite=Strict` + en-tête | Jeton CSRF fourni par un point d'API, envoyé en en-tête sur les écritures |
+| SEO (pages formations, travaux) | SPA pure / pré-rendu des pages publiques / SSR (Next.js) | À décider : une SPA pure est mal indexée, à éviter pour les pages de formations |
+| Hébergement de la SPA | Même domaine (`/` → SPA, `/api` et `/admin` → Symfony) / sous-domaine | Même domaine (pas de CORS, cookies simples) |
+| Formulaires (contact, inscription, mot de passe oublié) | Réécriture React + validation API | Validation Symfony (`Validator`) conservée côté API ; Turnstile vérifié côté serveur |
 
-- `config/packages/react.yaml` : `controllers_path` pointe sur `assets/react/build/islands`.
-  `islands/Formation/FormationFilter.jsx` → `{{ react_component('Formation/FormationFilter', props) }}`.
-- `config/packages/asset_mapper.yaml` exclut `assets/react/src/` (le navigateur ne lit pas le JSX).
-- **Dans les imports entre fichiers, écrire l'extension `.js`** (nom du fichier compilé) :
-  `import Counter from '../../components/Counter.js';`
+## Conséquences sur l'existant
 
-## Règles d'usage
+| Élément | Devenir |
+|---|---|
+| Composants JSX (`assets/react/src/components/`, `islands/`) | **Réutilisés** dans la SPA (Header, Footer, Hero, Logo, ThemeToggle…) |
+| Tokens Figma (`assets/styles/tokens.css`, `layout.css`) | **Réutilisés** dans la SPA |
+| `LayoutPropsBuilder` / `LayoutExtension` | Logique déplacée vers un point d'API (ex. `GET /api/layout`) ; tests à adapter |
+| `symfony/ux-react`, compilation Babel, `assets/react/build/` | Supprimés une fois la migration terminée |
+| Templates Twig publics, Stimulus, Turbo | Supprimés progressivement, page par page ; conservés pour EasyAdmin et les emails |
+| Formulaires Symfony publics (4) | Remplacés par des formulaires React + API |
+| Service `node` de Docker | Lance le serveur de dev Vite au lieu de `react:watch` |
+| Workflows `deploy-preprod.yml` / `deploy-prod.yml` | Ajout du build Vite et de l'envoi des fichiers compilés |
 
-- **Props** : uniquement des tableaux/DTO sérialisables, jamais d'entité Doctrine ; elles sont visibles
-  dans le HTML, donc jamais de secret ni de donnée personnelle non nécessaire. Les URL passent par `path()`.
-- **Données dynamiques** : contrôleurs Symfony qui renvoient du JSON (`$this->json(...)` + groupes de
-  sérialisation), protégés par `#[IsGranted]` / voters ; jeton CSRF transmis en prop pour les écritures.
-- **Choisir l'outil** : contenu statique → Twig + CSS ; comportement simple → Stimulus ;
-  interaction riche (filtres en direct, recherche, formulaires multi-étapes) → îlot React.
-- Garder `react`, `react/jsx-runtime`, `react-dom` et `react-dom/client` **à la même version**.
+## Migration (proposition, par étapes)
 
-## Flux de travail
+1. Squelette `frontend/` (Vite + React 19), service Docker, build en CI.
+2. Authentification par session + point d'API `/api/me` et `/api/layout` ; en-tête/pied de page/hero portés dans la SPA.
+3. Pages publiques en lecture (accueil, formations, travaux, pages statiques) via API.
+4. Formulaires (contact, inscription, connexion/2FA, réinitialisation du mot de passe, profil).
+5. Suppression de Symfony UX React, Babel, Stimulus/Turbo et des templates publics devenus inutiles.
 
-```bash
-docker compose up -d          # le service node lance « npm run react:watch »
-# … éditer assets/react/src/ …
-npm run react:build           # avant de commiter (ou laisser le watch tourner)
-git add assets/react/src assets/react/build
-```
+Tant que la migration n'est pas terminée, le site Twig actuel (avec les îlots déjà en place) reste en production.
 
-## Point d'attention : AssetMapper 7.4.19
+## Historique
 
-`php bin/console importmap:require react-dom` échoue (« Unable to find the latest version for package
-"react" ») : jsDelivr renvoie des dépendances encodées (`react@%5E19.3.0`) qu'AssetMapper ré-encode.
-Contournement : ajouter les entrées à la main dans `importmap.php` puis `php bin/console importmap:install`.
-Pour monter de version : modifier les versions dans `importmap.php`, supprimer `assets/vendor/react*`
-et `assets/vendor/scheduler`, puis relancer `importmap:install`.
-
-## Hors périmètre (prochaines étapes)
-
-ESLint/Prettier, tests Vitest + React Testing Library, tokens de design Figma, premiers îlots réels.
+- **2026-10-02** : option A adoptée (îlots React via Symfony UX React, JSX compilé par Babel, sortie versionnée
+  dans `assets/react/build/`, React servi par l'importmap). Voir `documentations-dev/134-...` et `135-...`.
+- **2026-10-15** : passage à l'option B après nouvelle discussion d'équipe ; Symfony conservé comme backend.

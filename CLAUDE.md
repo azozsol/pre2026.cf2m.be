@@ -44,7 +44,7 @@ Pour **toute tâche modifiant du code**, créer un fichier dans `.claude-tasks/`
 ## Contexte rapide
 - Architecture : MVC + couche Service + Repository pattern
 - Auth : Symfony Security (voters custom)
-- Frontend : ImportMap + Stimulus + Turbo + îlots React (Babel uniquement pour compiler le JSX : `assets/react/src/` → `assets/react/build/`, versionné) — voir `docs/architecture/decision-ilots-react.md`
+- Frontend : **décision du 2026-10-15 → SPA React séparée (Vite), Symfony en backend (API JSON + EasyAdmin)**, migration à venir. État actuel : ImportMap + Stimulus + Turbo + îlots React (Babel : `assets/react/src/` → `assets/react/build/`, versionné) — voir `docs/architecture/decision-ilots-react.md`
 - Déploiement : GitHub Actions → SSH VPS
 
 ## Fichiers clés à connaître
