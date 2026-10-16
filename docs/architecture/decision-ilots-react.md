@@ -101,6 +101,27 @@ frontend/
   (artefact `frontend-dist`). `dist/` n'est pas versionné. Le déploiement sur le VPS reste à faire.
 - Imports **sans** extension (Vite résout les `.jsx`).
 
+## API (backend Symfony) — API Platform
+
+**API Platform 5** est installé **côté backend uniquement** (`api-platform/symfony`, `api-platform/doctrine-orm` dans
+`composer.json`). La SPA n'installe rien : elle appelle `/api/...` avec `fetch` (`frontend/src/api/client.js`).
+
+- **Configuration** : `config/packages/api_platform.yaml` — formats `jsonld` et `json` (la SPA demande
+  `Accept: application/json`), `stateless: false` (authentification par **session** Symfony), documentation
+  `/api/docs` en dev uniquement.
+- **Jamais d'entité exposée directement** : une ressource = un DTO dans `src/ApiResource/` + un provider dans
+  `src/State/` qui réutilise les repositories et ne renvoie que les champs publics.
+- **Ressources disponibles** :
+
+| Ressource | Routes | Fichiers |
+|---|---|---|
+| Formation (lecture) | `GET /api/formations`, `GET /api/formations/{slug}` | `FormationResource`, `FormationProvider` (formations `published` / `recruiting` uniquement, brouillon → 404) |
+
+- **Cas particuliers** (`/api/statut`, futurs `/api/me`, `/api/layout`, contact avec Turnstile) : contrôleurs classiques
+  dans `src/Controller/Api/`, ou ressource API Platform avec processeur, au cas par cas.
+- Les valeurs `null` sont omises du JSON (comportement par défaut d'API Platform) : côté React, traiter un champ
+  absent comme `null` (ex. `logoUrl`).
+
 ## Historique
 
 - **2026-10-02** : option A adoptée (îlots React via Symfony UX React, JSX compilé par Babel, sortie versionnée
