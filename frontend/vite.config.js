@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 // En dev (Docker), les routes servies par Symfony sont relayées vers le conteneur nginx :
 // la SPA et l'API partagent ainsi la même origine (cookies de session, pas de CORS).
@@ -7,7 +8,7 @@ const backend = process.env.BACKEND_URL ?? 'http://nginx:80';
 const routesSymfony = ['/api', '/admin', '/login', '/logout', '/uploads', '/images'];
 
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     server: {
         host: '0.0.0.0',
         port: 5173,

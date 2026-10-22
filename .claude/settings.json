@@ -1,5 +1,14 @@
 {
+  "extraKnownMarketplaces": {
+    "ux-ui-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "plugin87/ux-ui-agent-skills"
+      }
+    }
+  },
   "enabledPlugins": {
-    "frontend-design@claude-plugins-official": true
+    "frontend-design@claude-plugins-official": true,
+    "ux-ui-agent-skills@ux-ui-agent-skills": true
   }
 }

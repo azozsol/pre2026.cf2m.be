@@ -54,5 +54,8 @@
   },
   "enabledMcpjsonServers": [
     "phpstorm"
-  ]
+  ],
+  "enabledPlugins": {
+    "frontend-design@anthropic-plugin-directory": true
+  }
 }

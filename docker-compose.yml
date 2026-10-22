@@ -33,6 +33,9 @@ services:
     working_dir: /var/www/html/frontend
     volumes:
       - .:/var/www/html
+      # node_modules propre au conteneur : les binaires natifs (Tailwind, lightningcss, rollup)
+      # diffèrent entre Windows et Linux Alpine, on ne partage donc pas celui de l'hôte
+      - frontend_node_modules:/var/www/html/frontend/node_modules
     ports:
       - "5173:5173"
     environment:
@@ -85,3 +88,4 @@ services:
 
 volumes:
   db_data:
+  frontend_node_modules:
