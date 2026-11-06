@@ -15,7 +15,7 @@ import { fadeInUp, staggerContainer } from "../../lib/animations";
 export const FormationsSection = ({ onNotify, onInfoSession }) => {
   const formations = [
     {
-      slug: "web-developer",
+      slug: "developpeur-web",
       title: "Web Developer",
       desc: "Codez des applications web dynamiques, du front-end au back-end.",
       badge: "COMPLET",
@@ -37,7 +37,7 @@ export const FormationsSection = ({ onNotify, onInfoSession }) => {
       meta: ["Prochaine session : Oct. 2026", "13 mois"],
     },
     {
-      slug: "tech-pc-reseaux",
+      slug: "technicien-reseaux",
       title: "Tech PC & Réseaux",
       desc: "Installez, configurez et sécurisez ordinateurs et infrastructures réseaux.",
       badge: "COMPLET",
@@ -48,7 +48,7 @@ export const FormationsSection = ({ onNotify, onInfoSession }) => {
       meta: ["Prochaine session : Mai 2026", "9 mois"],
     },
     {
-      slug: "animateur-digital",
+      slug: "animateur-multimedia",
       title: "Animateur Digital",
       desc: "Accompagnez les publics dans l'utilisation des outils numériques.",
       badge: "SÉANCES OUVERTES",

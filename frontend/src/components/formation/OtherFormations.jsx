@@ -1,10 +1,19 @@
 import { motion } from "motion/react";
 import { Link } from "react-router";
-import { otherFormations } from "../../data/formations";
+import { listerFormations } from "../../api/formations";
+import { useApi } from "../../hooks/useApi";
+import { ACCENT_PAR_DEFAUT } from "../../lib/formation";
 import { fadeInUp, staggerContainer } from "../../lib/animations";
 
 export const OtherFormations = ({ currentSlug }) => {
-  const t = otherFormations.filter((n) => n.slug !== currentSlug).slice(0, 3);
+  const { donnees } = useApi((signal) => listerFormations({ signal }), []);
+  // Section secondaire : en cas d'erreur ou pendant le chargement, elle n'apparaît simplement pas
+  const autres = (donnees ?? [])
+    .filter((formation) => formation.slug !== currentSlug)
+    .slice(0, 3);
+  if (autres.length === 0) {
+    return null;
+  }
   return (
     <section className="py-24 lg:py-32 bg-[#FDFBF7]">
       <div className="container mx-auto px-6 md:px-12">
@@ -24,7 +33,7 @@ export const OtherFormations = ({ currentSlug }) => {
             Voir tout le catalogue
           </Link>
         </div>
-        <motion.div
+        <motion.ul
           className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
           initial="hidden"
           whileInView="visible"
@@ -33,29 +42,46 @@ export const OtherFormations = ({ currentSlug }) => {
           }}
           variants={staggerContainer}
         >
-          {t.map((n) => (
-            <motion.div key={n.slug} variants={fadeInUp}>
-              <Link
-                to={`/formations/${n.slug}`}
-                className="bg-white border border-[#e5e7eb] rounded-[2rem] p-8 hover:border-[#016baf]/30 hover:shadow-lg transition-all duration-300 group flex items-start gap-6 h-full"
-              >
-                <div
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform ${n.color}`}
+          {autres.map((formation) => {
+            const couleur = formation.couleurPrincipale ?? ACCENT_PAR_DEFAUT;
+            return (
+              <motion.li key={formation.slug} variants={fadeInUp}>
+                <Link
+                  to={`/formations/${formation.slug}`}
+                  className="bg-white border border-[#e5e7eb] rounded-[2rem] p-8 hover:shadow-lg transition-all duration-300 group flex items-start gap-6 h-full"
                 >
-                  {n.icon}
-                </div>
-                <div>
-                  <h3 className="font-heading text-xl font-bold text-[#111827] mb-2 tracking-tight group-hover:text-[#016baf] transition-colors">
-                    {n.title}
-                  </h3>
-                  <p className="text-[#6b7280] font-medium leading-relaxed">
-                    {n.desc}
-                  </p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
+                  <div
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform font-heading text-2xl font-bold"
+                    style={{
+                      color: couleur,
+                      background: `${couleur}1a`,
+                    }}
+                  >
+                    {formation.logoUrl ? (
+                      <img
+                        src={formation.logoUrl}
+                        alt=""
+                        className="w-8 h-8 object-contain"
+                      />
+                    ) : (
+                      formation.titre.charAt(0)
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-xl font-bold text-[#111827] mb-2 tracking-tight group-hover:text-[#016baf] transition-colors">
+                      {formation.titre}
+                    </h3>
+                    {formation.descriptionCourte && (
+                      <p className="text-[#6b7280] font-medium leading-relaxed line-clamp-3">
+                        {formation.descriptionCourte}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              </motion.li>
+            );
+          })}
+        </motion.ul>
       </div>
     </section>
   );

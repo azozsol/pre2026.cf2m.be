@@ -1,7 +1,7 @@
 export const navFormations = [
   {
     name: "Web Developer",
-    slug: "web-developer",
+    slug: "developpeur-web",
     tag: "Complet",
   },
   {
@@ -11,12 +11,12 @@ export const navFormations = [
   },
   {
     name: "Tech PC & Réseaux",
-    slug: "tech-pc-reseaux",
+    slug: "technicien-reseaux",
     tag: "Complet",
   },
   {
     name: "Animateur Digital",
-    slug: "animateur-digital",
+    slug: "animateur-multimedia",
     tag: "Ouvert",
   },
   {

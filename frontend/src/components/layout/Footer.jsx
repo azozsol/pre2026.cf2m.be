@@ -48,7 +48,7 @@ export const Footer = () => (
             {[
               {
                 name: "Web Developer",
-                slug: "web-developer",
+                slug: "developpeur-web",
               },
               {
                 name: "Digital Designer",
@@ -56,11 +56,11 @@ export const Footer = () => (
               },
               {
                 name: "Tech PC & Réseaux",
-                slug: "tech-pc-reseaux",
+                slug: "technicien-reseaux",
               },
               {
                 name: "Animateur Digital",
-                slug: "animateur-digital",
+                slug: "animateur-multimedia",
               },
               {
                 name: "Chèques TIC",

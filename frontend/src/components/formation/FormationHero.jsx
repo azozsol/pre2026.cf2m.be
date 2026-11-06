@@ -1,190 +1,272 @@
-import { CalendarIcon, ClockIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import {
+  CalendarCheckIcon,
+  CalendarIcon,
+  CircleCheckBigIcon,
+  ClockIcon,
+  EuroIcon,
+  MapPinIcon,
+  PhoneIcon,
+} from "lucide-react";
 import { motion } from "motion/react";
-import { getCtaLabel, heroTabs } from "../../data/formations";
+import { Icone } from "../../lib/icones";
+import {
+  decouperTitre,
+  estEnRecrutement,
+  getCtaLabel,
+} from "../../lib/formation";
 import { fadeInUp, staggerContainer } from "../../lib/animations";
-import { StackedTabs } from "./StackedTabs";
 
-export const FormationHero = ({
-  data,
-  accent,
-  onNotify,
-  onInfoSession,
-  slug,
-}) => (
-  <section className="bg-[#FDFBF7] pt-32 pb-24 overflow-hidden relative">
+const Badge = ({ children, className = "", style }) => (
+  <span
+    className={`inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider ${className}`}
+    style={style}
+  >
+    {children}
+  </span>
+);
+
+const EncadreConditions = ({ formation, accent }) => {
+  const synthese = [
+    {
+      icon: <ClockIcon className="w-4 h-4" />,
+      label: "Durée totale",
+      value: [formation.duree, formation.heuresTotales && `(${formation.heuresTotales})`]
+        .filter(Boolean)
+        .join(" "),
+    },
+    {
+      icon: <CalendarIcon className="w-4 h-4" />,
+      label: "Rythme",
+      value: formation.rythme,
+    },
+    {
+      icon: <EuroIcon className="w-4 h-4" />,
+      label: "Coût",
+      value: formation.cout,
+    },
+  ].filter((ligne) => ligne.value);
+
+  return (
     <div
-      className="absolute top-0 right-0 w-[800px] h-[800px] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none opacity-[0.08]"
+      className="bg-white rounded-[2rem] border border-[#e5e7eb] shadow-xl p-8 border-t-4"
       style={{
-        background: accent.primary,
+        borderTopColor: accent.primary,
       }}
-    />
-    <div className="container mx-auto px-6 md:px-12 relative z-10">
-      <div className="grid lg:grid-cols-2 gap-16 items-center">
-        <motion.div
-          className="max-w-2xl space-y-8"
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-        >
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-wrap items-center gap-3"
-          >
-            <span
-              className={`inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider ${data.isOpen ? "bg-[#059669]/10 text-[#059669]" : "bg-gray-100 text-gray-500"}`}
-            >
+    >
+      {formation.conditions.length > 0 && (
+        <>
+          <h2 className="font-heading text-xl font-bold text-[#111827] tracking-tight mb-6 flex items-center justify-between gap-4 pb-4 border-b border-[#f3f4f6]">
+            Conditions d'accès
+            {formation.organismeConditions && (
               <span
-                className={`w-2 h-2 rounded-full animate-pulse ${data.isOpen ? "bg-[#059669]" : "bg-gray-400"}`}
-              />
-              {data.isOpen
-                ? "Recrutement en cours"
-                : "Complet — Prochaine session bientôt"}
-            </span>
-            <span className="bg-[#f3f4f6] text-[#4b5563] text-xs font-bold px-4 py-2 rounded-full uppercase tracking-wider">
-              Formation qualifiante
-            </span>
-          </motion.div>
-          <motion.h1
-            variants={fadeInUp}
-            className="font-heading text-4xl md:text-5xl lg:text-7xl font-bold text-[#111827] leading-[1.05] tracking-tight"
-          >
-            {data.title} <br className="hidden md:block" />
-            <span
-              className="relative"
-              style={{
-                color: accent.primary,
-              }}
-            >
-              {data.accentWord}
-              <span
-                className="absolute bottom-1 left-0 w-full h-[0.2em] -z-10 opacity-30"
+                className="text-xs font-bold px-3 py-1 rounded-full"
                 style={{
-                  background: accent.primary,
+                  color: accent.primary,
+                  background: `${accent.primary}1a`,
                 }}
-              />
-            </span>
-          </motion.h1>
-          <motion.p
-            variants={fadeInUp}
-            className="text-xl md:text-2xl text-[#4b5563] leading-relaxed font-medium"
-          >
-            {data.subtitle}
-          </motion.p>
-          <motion.div
-            variants={fadeInUp}
-            className="flex flex-wrap gap-4 md:gap-6"
-          >
-            {[
-              {
-                icon: <ClockIcon className="w-5 h-5" />,
-                label: "Durée",
-                value: data.duration,
-              },
-              {
-                icon: <CalendarIcon className="w-5 h-5" />,
-                label: "Sélection",
-                value: data.selectionDate,
-              },
-              {
-                icon: <UsersIcon className="w-5 h-5" />,
-                label: "Places",
-                value: data.places,
-              },
-              {
-                icon: <MapPinIcon className="w-5 h-5" />,
-                label: "Lieu",
-                value: data.location,
-              },
-            ].map((a, o) => (
-              <div
-                key={o}
-                className="flex items-center gap-3 bg-white border border-[#e5e7eb] rounded-2xl px-5 py-3 shadow-sm"
               >
-                <div
+                {formation.organismeConditions}
+              </span>
+            )}
+          </h2>
+          <ul className="space-y-4">
+            {formation.conditions.map((condition) => (
+              <li key={condition.titre} className="flex items-start gap-3">
+                <CircleCheckBigIcon
+                  className="w-5 h-5 mt-0.5 shrink-0 text-[#059669]"
+                  aria-hidden="true"
+                />
+                <div>
+                  <span className="block font-bold text-[#111827]">
+                    {condition.titre}
+                  </span>
+                  {condition.detail && (
+                    <span className="text-sm text-[#6b7280] font-medium">
+                      {condition.detail}
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {synthese.length > 0 && (
+        <dl
+          className={`bg-[#FDFBF7] rounded-2xl p-5 space-y-3 ${formation.conditions.length > 0 ? "mt-8" : ""}`}
+        >
+          {synthese.map((ligne) => (
+            <div
+              key={ligne.label}
+              className="flex justify-between items-start gap-4 text-sm"
+            >
+              <dt className="flex items-center gap-2 text-[#6b7280] font-medium shrink-0">
+                {ligne.icon}
+                {ligne.label}
+              </dt>
+              <dd className="font-bold text-[#111827] text-right">
+                {ligne.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      <a
+        href="tel:+3225390360"
+        className="mt-6 flex items-center justify-center gap-2 text-sm font-semibold hover:underline"
+        style={{
+          color: accent.primary,
+        }}
+      >
+        <PhoneIcon className="w-4 h-4" aria-hidden="true" />
+        Une question ? 02 539 03 60
+      </a>
+    </div>
+  );
+};
+
+export const FormationHero = ({ formation, accent, onNotify, onInfoSession }) => {
+  const estOuverte = estEnRecrutement(formation);
+  const { debut, dernierMot } = decouperTitre(formation.titre);
+  return (
+    <section className="bg-[#FDFBF7] pt-32 pb-24 overflow-hidden relative">
+      <div
+        className="absolute top-0 right-0 w-[800px] h-[800px] rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none opacity-[0.08]"
+        style={{
+          background: accent.primary,
+        }}
+      />
+      <div className="container mx-auto px-6 md:px-12 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          <motion.div
+            className="lg:col-span-7 space-y-8"
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+          >
+            <motion.div
+              variants={fadeInUp}
+              className="flex flex-wrap items-center gap-3"
+            >
+              <Badge
+                className={
+                  estOuverte
+                    ? "bg-[#059669]/10 text-[#059669]"
+                    : "bg-gray-100 text-gray-500"
+                }
+              >
+                <span
+                  className={`w-2 h-2 rounded-full animate-pulse ${estOuverte ? "bg-[#059669]" : "bg-gray-400"}`}
+                />
+                {estOuverte ? "Recrutement en cours" : "Complet"}
+              </Badge>
+              {formation.prochaineSession && (
+                <Badge
+                  className="text-white"
                   style={{
-                    color: accent.primary,
+                    background: accent.primary,
                   }}
                 >
-                  {a.icon}
-                </div>
-                <div>
-                  <div className="text-xs text-[#9ca3af] font-bold uppercase tracking-wide">
-                    {a.label}
-                  </div>
-                  <div className="text-sm font-bold text-[#111827]">
-                    {a.value}
-                  </div>
-                </div>
-              </div>
-            ))}
+                  <CalendarCheckIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                  Session {formation.prochaineSession}
+                </Badge>
+              )}
+              <Badge className="bg-[#059669] text-white">100% Gratuite</Badge>
+              {formation.modalite && (
+                <Badge className="bg-[#f3f4f6] text-[#4b5563]">
+                  <MapPinIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                  {formation.modalite}
+                </Badge>
+              )}
+            </motion.div>
+            <motion.h1
+              variants={fadeInUp}
+              className="font-heading text-4xl md:text-5xl lg:text-7xl font-bold text-[#111827] leading-[1.05] tracking-tight"
+            >
+              {debut && (
+                <>
+                  {debut} <br className="hidden md:block" />
+                </>
+              )}
+              <span
+                style={{
+                  color: accent.primary,
+                }}
+              >
+                {dernierMot}
+              </span>
+            </motion.h1>
+            {formation.descriptionCourte && (
+              <motion.p
+                variants={fadeInUp}
+                className="text-xl md:text-2xl text-[#4b5563] leading-relaxed font-medium"
+              >
+                {formation.descriptionCourte}
+              </motion.p>
+            )}
+            {formation.pointsForts.length > 0 && (
+              <motion.ul
+                variants={fadeInUp}
+                className="grid sm:grid-cols-3 gap-4"
+              >
+                {formation.pointsForts.map((point) => (
+                  <li
+                    key={point.libelle}
+                    className="flex items-center gap-3 bg-white border border-[#e5e7eb] rounded-2xl px-4 py-3 shadow-sm"
+                  >
+                    <span
+                      className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                      style={{
+                        color: accent.primary,
+                        background: `${accent.primary}1a`,
+                      }}
+                    >
+                      <Icone nom={point.icone} className="w-5 h-5" />
+                    </span>
+                    <div>
+                      <div className="text-xs text-[#9ca3af] font-bold uppercase tracking-wide">
+                        {point.libelle}
+                      </div>
+                      <div className="text-sm font-bold text-[#111827]">
+                        {point.valeur}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </motion.ul>
+            )}
+            <motion.div variants={fadeInUp} className="pt-2">
+              <button
+                type="button"
+                onClick={estOuverte ? onInfoSession : onNotify}
+                className="text-white px-8 py-4 rounded-full font-semibold text-lg transition-all inline-flex items-center justify-center gap-3 shadow-xl hover:opacity-90"
+                style={{
+                  background: accent.primary,
+                }}
+              >
+                {getCtaLabel(estOuverte)}
+              </button>
+            </motion.div>
           </motion.div>
           <motion.div
-            variants={fadeInUp}
-            className="flex flex-col sm:flex-row gap-5 pt-4"
+            className="lg:col-span-5"
+            initial={{
+              opacity: 0,
+              x: 20,
+            }}
+            animate={{
+              opacity: 1,
+              x: 0,
+            }}
+            transition={{
+              duration: 0.8,
+              delay: 0.2,
+            }}
           >
-            {data.isOpen ? (
-              <button
-                onClick={onInfoSession}
-                className="text-white px-8 py-4 rounded-full font-semibold text-lg transition-all flex items-center justify-center gap-3 shadow-xl hover:opacity-90"
-                style={{
-                  background: accent.primary,
-                }}
-              >
-                {getCtaLabel(data.isOpen)}
-              </button>
-            ) : (
-              <button
-                onClick={onNotify}
-                className="text-white px-8 py-4 rounded-full font-semibold text-lg transition-all flex items-center justify-center gap-3 shadow-xl hover:opacity-90"
-                style={{
-                  background: accent.primary,
-                }}
-              >
-                {getCtaLabel(data.isOpen)}
-              </button>
-            )}
+            <EncadreConditions formation={formation} accent={accent} />
           </motion.div>
-        </motion.div>
-        <motion.div
-          initial={{
-            opacity: 0,
-            x: 20,
-          }}
-          animate={{
-            opacity: 1,
-            x: 0,
-          }}
-          transition={{
-            duration: 0.8,
-            delay: 0.2,
-          }}
-          className="relative lg:h-[650px] flex items-center justify-center"
-        >
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] h-full max-h-[500px] rounded-[3rem] rotate-3 opacity-20"
-            style={{
-              background: accent.primary,
-            }}
-          />
-          <div
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[500px] h-full max-h-[500px] rounded-[3rem] -rotate-3 opacity-40 border-2"
-            style={{
-              borderColor: accent.primary,
-            }}
-          />
-          {slug === "aventure-digitale" ? (
-            <div className="relative z-10 w-full max-w-[500px] h-full max-h-[600px] bg-white rounded-[2.5rem] shadow-2xl border-8 border-white overflow-hidden flex items-end">
-              <StackedTabs tabs={heroTabs} accentColor={accent.primary} />
-            </div>
-          ) : (
-            <img
-              src={data.imageUrl}
-              alt={`${data.title} ${data.accentWord}`}
-              className="relative z-10 w-full max-w-[500px] h-full max-h-[600px] object-cover rounded-[2.5rem] shadow-2xl border-8 border-white"
-            />
-          )}
-        </motion.div>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
