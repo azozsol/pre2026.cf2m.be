@@ -65,6 +65,12 @@ final class FormationFactory extends PersistentObjectFactory
                 'publishedAt' => null,
                 'createdBy' => UserFactory::new(),
                 'updatedAt' => null,
+                'duree' => self::faker()->numberBetween(6, 13).' mois',
+                'prochaineSession' => 'En continu',
+                'modalite' => 'Cours du jour (Bruxelles)',
+                'rythme' => 'Temps plein (9h - 16h30)',
+                'cout' => 'Gratuit (+ Prime 1€/h)',
+                'lieu' => 'Centre CF2M – 87-89 Avenue du Parc, 1060 Saint-Gilles (Bruxelles)',
             ];
         };
     }

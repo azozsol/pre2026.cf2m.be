@@ -50,12 +50,48 @@ MariaDB 11.4 — encodage `utf8mb4` — collation `utf8mb4_unicode_ci`
 | published_at        | datetime                 | Nullable                                           |
 | updated_at          | datetime                 | Nullable                                           |
 | updated_by_user_id  | int unsigned (FK → User) | Nullable (si jamais mis à jour)                    |
+| prochaine_session   | varchar(50)              | Nullable — texte libre (« Mars 2027 », « En continu ») |
+| modalite            | varchar(100)             | Nullable — « Cours du jour (Bruxelles) »           |
+| points_forts        | json                     | Nullable — liste de `{icone, libelle, valeur}` (hero) |
+| duree               | varchar(50)              | Nullable — texte libre (« 13 mois »)               |
+| heures_totales      | varchar(50)              | Nullable — texte libre (« 1 225 heures »)          |
+| rythme              | varchar(100)             | Nullable — « Temps plein (9h - 16h30) »            |
+| cout                | varchar(100)             | Nullable — « Gratuit (+ Prime 1€/h) »              |
+| horaire             | varchar(150)             | Nullable — horaires de cours                       |
+| lieu                | varchar(255)             | Nullable — adresse et accès en transports          |
+| metier_description  | longtext                 | Nullable — présentation du métier                  |
+| missions            | json                     | Nullable — liste de `{icone, titre, description, misEnAvant}` |
+| qualites_description| longtext                 | Nullable — encadré « Qualités clés »               |
+| organisme_conditions| varchar(50)              | Nullable — « Actiris »                             |
+| conditions          | json                     | Nullable — liste de `{titre, detail}`              |
+| affirmations_profil | json                     | Nullable — liste de textes (test « Ce profil vous ressemble-t-il ? ») |
+
+Les icônes stockées (`icone`) sont des noms d'icônes lucide, utilisées par la SPA.
 
 **Champ non mappé** : `logoFile` (`File`) — géré par VichUploader.
+
+Les champs de la page détail (de `prochaine_session` à `affirmations_profil`, piliers compris) ne sont pas versionnés dans `formation_history`.
 
 **Relations** :
 - `formation_user` (ManyToMany entre Formation et User — responsables)
 - `FormationStagiaire` (OneToMany, `orphanRemoval: true`) — stagiaires rattachés
+- `FormationPilier` (OneToMany, `orphanRemoval: true`, triés par `position`) — piliers du programme
+
+### FormationPilier
+> Pilier du programme d'une formation (un onglet de la section « Programme » de la page détail).
+
+| Champ          | Type                          | Notes                                |
+|----------------|-------------------------------|--------------------------------------|
+| id             | int unsigned (PK)             |                                      |
+| formation_id   | int unsigned (FK → Formation) | ManyToOne, `ON DELETE CASCADE`       |
+| position       | smallint unsigned             | Ordre d'affichage                    |
+| libelle_onglet | varchar(100)                  | « Design & Conception »              |
+| titre          | varchar(255)                  |                                      |
+| icone          | varchar(50)                   | Nullable — nom d'icône lucide        |
+| description    | longtext                      | Nullable                             |
+| mis_en_avant   | tinyint                       | Défaut 0 — onglet mis en avant (module IA) |
+| badge          | varchar(50)                   | Nullable — « Module Exclusif CF2M »  |
+| elements       | json                          | Liste de `{etiquette, icone, titre, description}` |
 
 ### FormationStagiaire (entité pivot)
 > Rattache un `User` à une `Formation` précise. La présence d'au moins une ligne pour un utilisateur déclenche la synchronisation physique de `ROLE_STAGIAIRE` sur `User.roles` (voir `StagiaireService`). Voir `docs/architecture/proposition-gestion-stagiaires-formation.md` pour le contexte de conception.

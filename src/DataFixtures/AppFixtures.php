@@ -286,6 +286,7 @@ class AppFixtures extends Fixture implements FixtureGroupInterface
             foreach ($responsables as $responsable) {
                 $formation->addResponsable($responsable);
             }
+            FormationsDetailFixturesData::remplir($formation);
         }
         $manager->flush();
 

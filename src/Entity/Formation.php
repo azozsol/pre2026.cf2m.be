@@ -91,12 +91,87 @@ class Formation
     #[ORM\OneToMany(targetEntity: FormationStagiaire::class, mappedBy: 'formation', orphanRemoval: true)]
     private Collection $stagiaires;
 
+    // ── Page détail (hors workflow de révisions : non versionné dans FormationHistory) ──
+
+    /** Texte libre : « Mars 2027 », « En continu »… */
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Length(max: 50)]
+    private ?string $prochaineSession = null;
+
+    /** Exemple : « Cours du jour (Bruxelles) » */
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $modalite = null;
+
+    /** @var list<array{icone: string|null, libelle: string, valeur: string}>|null icone = nom d'icône lucide */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $pointsForts = null;
+
+    /** Texte libre : « 13 mois », « 1 à 10 jours / module »… */
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Length(max: 50)]
+    private ?string $duree = null;
+
+    /** Texte libre : « 1 225 heures », « 8 à 40h / module »… */
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Length(max: 50)]
+    private ?string $heuresTotales = null;
+
+    /** Exemple : « Temps plein (9h - 16h30) » */
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $rythme = null;
+
+    /** Exemple : « Gratuit (+ Prime 1€/h) » */
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\Length(max: 100)]
+    private ?string $cout = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    #[Assert\Length(max: 150)]
+    private ?string $horaire = null;
+
+    /** Adresse et accès en transports */
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $lieu = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $metierDescription = null;
+
+    /** @var list<array{icone: string|null, titre: string, description: string|null, misEnAvant: bool}>|null */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $missions = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $qualitesDescription = null;
+
+    /** Organisme affiché à côté des conditions d'accès, exemple : « Actiris » */
+    #[ORM\Column(length: 50, nullable: true)]
+    #[Assert\Length(max: 50)]
+    private ?string $organismeConditions = null;
+
+    /** @var list<array{titre: string, detail: string|null}>|null */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $conditions = null;
+
+    /** @var list<string>|null affirmations du test « Ce profil vous ressemble-t-il ? » */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $affirmationsProfil = null;
+
+    /** @var Collection<int, FormationPilier> */
+    #[ORM\OneToMany(targetEntity: FormationPilier::class, mappedBy: 'formation', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC'])]
+    #[Assert\Valid]
+    private Collection $piliers;
+
     public function __construct()
     {
         $this->responsables = new ArrayCollection();
         $this->works = new ArrayCollection();
         $this->inscriptions = new ArrayCollection();
         $this->stagiaires = new ArrayCollection();
+        $this->piliers = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -389,6 +464,222 @@ class Formation
         if ($this->stagiaires->removeElement($stagiaire)) {
             if ($stagiaire->getFormation() === $this) {
                 $stagiaire->setFormation(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getProchaineSession(): ?string
+    {
+        return $this->prochaineSession;
+    }
+
+    public function setProchaineSession(?string $prochaineSession): static
+    {
+        $this->prochaineSession = $prochaineSession;
+
+        return $this;
+    }
+
+    public function getModalite(): ?string
+    {
+        return $this->modalite;
+    }
+
+    public function setModalite(?string $modalite): static
+    {
+        $this->modalite = $modalite;
+
+        return $this;
+    }
+
+    /** @return list<array{icone: string|null, libelle: string, valeur: string}> */
+    public function getPointsForts(): array
+    {
+        return $this->pointsForts ?? [];
+    }
+
+    /** @param array<array{icone: string|null, libelle: string, valeur: string}> $pointsForts */
+    public function setPointsForts(array $pointsForts): static
+    {
+        // Les formulaires de collection laissent des trous dans les clés : sans array_values, le JSON deviendrait un objet
+        $this->pointsForts = array_values($pointsForts);
+
+        return $this;
+    }
+
+    public function getDuree(): ?string
+    {
+        return $this->duree;
+    }
+
+    public function setDuree(?string $duree): static
+    {
+        $this->duree = $duree;
+
+        return $this;
+    }
+
+    public function getHeuresTotales(): ?string
+    {
+        return $this->heuresTotales;
+    }
+
+    public function setHeuresTotales(?string $heuresTotales): static
+    {
+        $this->heuresTotales = $heuresTotales;
+
+        return $this;
+    }
+
+    public function getRythme(): ?string
+    {
+        return $this->rythme;
+    }
+
+    public function setRythme(?string $rythme): static
+    {
+        $this->rythme = $rythme;
+
+        return $this;
+    }
+
+    public function getCout(): ?string
+    {
+        return $this->cout;
+    }
+
+    public function setCout(?string $cout): static
+    {
+        $this->cout = $cout;
+
+        return $this;
+    }
+
+    public function getHoraire(): ?string
+    {
+        return $this->horaire;
+    }
+
+    public function setHoraire(?string $horaire): static
+    {
+        $this->horaire = $horaire;
+
+        return $this;
+    }
+
+    public function getLieu(): ?string
+    {
+        return $this->lieu;
+    }
+
+    public function setLieu(?string $lieu): static
+    {
+        $this->lieu = $lieu;
+
+        return $this;
+    }
+
+    public function getMetierDescription(): ?string
+    {
+        return $this->metierDescription;
+    }
+
+    public function setMetierDescription(?string $metierDescription): static
+    {
+        $this->metierDescription = $metierDescription;
+
+        return $this;
+    }
+
+    /** @return list<array{icone: string|null, titre: string, description: string|null, misEnAvant: bool}> */
+    public function getMissions(): array
+    {
+        return $this->missions ?? [];
+    }
+
+    /** @param array<array{icone: string|null, titre: string, description: string|null, misEnAvant: bool}> $missions */
+    public function setMissions(array $missions): static
+    {
+        $this->missions = array_values($missions);
+
+        return $this;
+    }
+
+    public function getQualitesDescription(): ?string
+    {
+        return $this->qualitesDescription;
+    }
+
+    public function setQualitesDescription(?string $qualitesDescription): static
+    {
+        $this->qualitesDescription = $qualitesDescription;
+
+        return $this;
+    }
+
+    public function getOrganismeConditions(): ?string
+    {
+        return $this->organismeConditions;
+    }
+
+    public function setOrganismeConditions(?string $organismeConditions): static
+    {
+        $this->organismeConditions = $organismeConditions;
+
+        return $this;
+    }
+
+    /** @return list<array{titre: string, detail: string|null}> */
+    public function getConditions(): array
+    {
+        return $this->conditions ?? [];
+    }
+
+    /** @param array<array{titre: string, detail: string|null}> $conditions */
+    public function setConditions(array $conditions): static
+    {
+        $this->conditions = array_values($conditions);
+
+        return $this;
+    }
+
+    /** @return list<string> */
+    public function getAffirmationsProfil(): array
+    {
+        return $this->affirmationsProfil ?? [];
+    }
+
+    /** @param array<string|null> $affirmationsProfil */
+    public function setAffirmationsProfil(array $affirmationsProfil): static
+    {
+        $this->affirmationsProfil = array_values(array_filter($affirmationsProfil));
+
+        return $this;
+    }
+
+    /** @return Collection<int, FormationPilier> */
+    public function getPiliers(): Collection
+    {
+        return $this->piliers;
+    }
+
+    public function addPilier(FormationPilier $pilier): static
+    {
+        if (!$this->piliers->contains($pilier)) {
+            $this->piliers->add($pilier);
+            $pilier->setFormation($this);
+        }
+
+        return $this;
+    }
+
+    public function removePilier(FormationPilier $pilier): static
+    {
+        if ($this->piliers->removeElement($pilier)) {
+            if ($pilier->getFormation() === $this) {
+                $pilier->setFormation(null);
             }
         }
 

@@ -8,6 +8,10 @@ use App\Entity\Formation;
 use App\Entity\FormationHistory;
 use App\Entity\User;
 use App\Field\SunEditorField;
+use App\Form\FormationConditionType;
+use App\Form\FormationMissionType;
+use App\Form\FormationPilierType;
+use App\Form\FormationPointFortType;
 use App\Repository\FormationHistoryRepository;
 use App\Repository\FormationStagiaireRepository;
 use App\Repository\UserRepository;
@@ -29,9 +33,11 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ColorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
@@ -143,6 +149,7 @@ class FormationCrudController extends AbstractCrudController
                     : '';
             })
         ;
+        yield FormField::addTab('Général');
         yield TextField::new('title', 'Titre');
         yield TextField::new('slug', 'Slug');
         yield ChoiceField::new('status', 'Statut')
@@ -208,6 +215,97 @@ class FormationCrudController extends AbstractCrudController
         yield SunEditorField::new('description', 'Description')
             ->hideOnIndex()
             ->setRequired(false)
+        ;
+
+        yield FormField::addTab('Hero et infos pratiques');
+        yield TextField::new('prochaineSession', 'Prochaine session')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Exemple : Mars 2027, En continu')
+        ;
+        yield TextField::new('modalite', 'Modalité')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Exemple : Cours du jour (Bruxelles)')
+        ;
+        yield CollectionField::new('pointsForts', 'Points forts')
+            ->setEntryType(FormationPointFortType::class)
+            ->setEntryIsComplex()
+            ->onlyOnForms()
+            ->setRequired(false)
+            ->setHelp('Trois points forts affichés sous l\'accroche.')
+        ;
+        yield TextField::new('duree', 'Durée')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Exemple : 13 mois')
+        ;
+        yield TextField::new('heuresTotales', 'Volume horaire')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Exemple : 1 225 heures')
+        ;
+        yield TextField::new('rythme', 'Rythme')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Exemple : Temps plein (9h - 16h30)')
+        ;
+        yield TextField::new('cout', 'Coût')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Exemple : Gratuit (+ Prime 1€/h)')
+        ;
+        yield TextField::new('horaire', 'Horaires de cours')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Exemple : Du lundi au vendredi, de 09h00 à 16h30 (Formation à temps plein)')
+        ;
+        yield TextField::new('lieu', 'Lieu')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Adresse et accès en transports en commun.')
+        ;
+
+        yield FormField::addTab('Le métier');
+        yield TextareaField::new('metierDescription', 'Présentation du métier')
+            ->hideOnIndex()
+            ->setRequired(false)
+        ;
+        yield CollectionField::new('missions', 'Missions')
+            ->setEntryType(FormationMissionType::class)
+            ->setEntryIsComplex()
+            ->onlyOnForms()
+            ->setRequired(false)
+        ;
+        yield TextareaField::new('qualitesDescription', 'Qualités clés')
+            ->hideOnIndex()
+            ->setRequired(false)
+        ;
+
+        yield FormField::addTab('Programme');
+        yield CollectionField::new('piliers', 'Piliers')
+            ->setEntryType(FormationPilierType::class)
+            ->setEntryIsComplex()
+            ->onlyOnForms()
+            ->setRequired(false)
+        ;
+
+        yield FormField::addTab('Admission');
+        yield TextField::new('organismeConditions', 'Organisme')
+            ->hideOnIndex()
+            ->setRequired(false)
+            ->setHelp('Affiché à côté des conditions d\'accès, exemple : Actiris')
+        ;
+        yield CollectionField::new('conditions', 'Conditions d\'accès')
+            ->setEntryType(FormationConditionType::class)
+            ->setEntryIsComplex()
+            ->onlyOnForms()
+            ->setRequired(false)
+        ;
+        yield CollectionField::new('affirmationsProfil', 'Test « Ce profil vous ressemble-t-il ? »')
+            ->onlyOnForms()
+            ->setRequired(false)
+            ->setHelp('Une affirmation par entrée.')
         ;
     }
 

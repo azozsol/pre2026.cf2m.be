@@ -188,6 +188,11 @@ class ProdFixtures extends Fixture
             colorSecondary: '#00589a',
         );
 
+        // Contenu des pages détail déjà rédigé (Digital Designer pour l'instant) : remplace les TODO correspondants
+        foreach ($formations as $formation) {
+            FormationsDetailFixturesData::remplir($formation);
+        }
+
         $manager->flush();
 
         // ── Partenaires ──────────────────────────────────────────────────────────
